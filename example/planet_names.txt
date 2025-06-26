@@ -1,0 +1,13 @@
+loop
+  if $0 == 0 then
+    $out = $in - 32
+    $0 = 1
+  done
+  if $0 == 1 then
+    $1 = $in
+    if $1 == 32 then
+      $0 = 0
+    done
+    $out = $1
+  done
+done
