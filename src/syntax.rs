@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 #[derive(Clone, Copy)]
 pub enum Reg {
@@ -13,10 +13,35 @@ pub enum Reg {
     O,
 }
 
+impl Debug for Reg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Reg::R0 => write!(f, "$0"),
+            Reg::R1 => write!(f, "$1"),
+            Reg::R2 => write!(f, "$2"),
+            Reg::R3 => write!(f, "$3"),
+            Reg::R4 => write!(f, "$4"),
+            Reg::R5 => write!(f, "$5"),
+            Reg::P => write!(f, "$pc"),
+            Reg::I => write!(f, "$in"),
+            Reg::O => write!(f, "$out"),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Val {
     Reg(Reg),
     Im(u8),
+}
+
+impl Debug for Val {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Val::Reg(reg) => write!(f, "{reg:?}"),
+            Val::Im(x) => write!(f, "{x}"),
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -28,9 +53,29 @@ pub enum Bop {
     Xor,
 }
 
+impl Debug for Bop {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Bop::Add => write!(f, "add"),
+            Bop::Sub => write!(f, "sub"),
+            Bop::And => write!(f, "and"),
+            Bop::Or => write!(f, "or"),
+            Bop::Xor => write!(f, "xor"),
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Uop {
     Not,
+}
+
+impl Debug for Uop {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Uop::Not => write!(f, "not"),
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -41,6 +86,19 @@ pub enum Cmp {
     Leq,
     Gt,
     Geq,
+}
+
+impl Debug for Cmp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Cmp::Eq => write!(f, "eq"),
+            Cmp::Neq => write!(f, "neq"),
+            Cmp::Lt => write!(f, "lt"),
+            Cmp::Leq => write!(f, "leq"),
+            Cmp::Gt => write!(f, "gt"),
+            Cmp::Geq => write!(f, "geq"),
+        }
+    }
 }
 
 pub enum Stmt {
@@ -61,6 +119,24 @@ pub enum Stmt {
         rhs: Val,
         cmp: Cmp,
     },
+}
+
+impl Debug for Stmt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Stmt::Bin(bop, val, val1, reg) => write!(f, "{reg:?} <- {val:?} {bop:?} {val1:?}"),
+            Stmt::Un(uop, val, reg) => write!(f, "{reg:?} <- {uop:?} {val:?}"),
+            Stmt::Save { addr, val } => write!(f, "[{addr:?}] <- {val:?}"),
+            Stmt::Load { addr, reg } => write!(f, "{reg:?} <- [{addr:?}]"),
+            Stmt::Label(l) => write!(f, "{l}:"),
+            Stmt::Br {
+                label,
+                lhs,
+                rhs,
+                cmp,
+            } => write!(f, "{lhs:?} {cmp:?} {rhs:?} ? {label}"),
+        }
+    }
 }
 
 pub trait ToNum {
