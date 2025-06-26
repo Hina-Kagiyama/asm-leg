@@ -1,4 +1,4 @@
-use crate::syntax::{Reg, Val, Bop, Uop, Cmp, Stmt}; 
+use crate::syntax::{Reg, Val, Bop, Uop, Cmp, Stmt, Cond}; 
 grammar;
 
 pub Program: Vec<Stmt> = {
@@ -7,18 +7,23 @@ pub Program: Vec<Stmt> = {
 
 Stmt: Stmt = {
     <r:Register> "=" <l:Val> <b:Bop> <r2:Val> => Stmt::Bin(b, l, r2, r),
+    <r:Register> "=" <l:Val> => Stmt::Bin(Bop::Add, l, Val::Im(0), r),
     <r:Register> "=" <u:Uop> <v:Val> => Stmt::Un(u, v, r),
     <r:Register> "=" "[" <a:Val> "]" => Stmt::Load { addr: a, reg: r },
     "[" <a:Val> "]" "=" <v:Val> => Stmt::Save { addr: a, val: v },
     <lbl:Label> ":" => Stmt::Label(lbl),
-    <l:Val> <c:Cmp> <r2:Val> "?" <lbl:Label> => Stmt::Br { label: lbl, lhs: l, rhs: r2, cmp: c },
+    // <c:Cond> "?" <lbl:Label> => Stmt::Br { label: lbl, lhs: l, rhs: r2, cmp: c },
+    "if" <c:Cond> "then" <s:Stmt*> "else" <s2:Stmt*> "done" => Stmt::If { cond: c, yes: s, no: s2 },
+    "while" <c:Cond> "do" <s:Stmt*> "done" => Stmt::While { cond: c, block: s },
 };
+
+Cond: Cond = <l:Val> <c:Cmp> <r2:Val> => Cond { lhs: l, rhs: r2, cmp: c };
 
 Im: u8 = r"[0-9]+" => u8::from_str_radix(<>, 10).unwrap();
 
 Val: Val = {
-    <r:Register> => Val::Reg(r),
-    <i:Im> => Val::Im(i),
+    Register => Val::Reg(<>),
+    Im => Val::Im(<>),
 };
 
 Label: String = r"[A-Za-z_][A-Za-z0-9_]*" => <>.to_string();
