@@ -54,6 +54,13 @@ pub enum Bop {
     And,
     Or,
     Xor,
+    Shl,
+    Shr,
+    Rol,
+    Ror,
+    Ashr,
+    Mul,
+    Div,
 }
 
 impl Debug for Bop {
@@ -64,6 +71,13 @@ impl Debug for Bop {
             Bop::And => write!(f, "and"),
             Bop::Or => write!(f, "or"),
             Bop::Xor => write!(f, "xor"),
+            Bop::Shl => write!(f, "shl"),
+            Bop::Shr => write!(f, "shr"),
+            Bop::Rol => write!(f, "rol"),
+            Bop::Ror => write!(f, "ror"),
+            Bop::Ashr => write!(f, "ashr"),
+            Bop::Mul => write!(f, "mul"),
+            Bop::Div => write!(f, "div"),
         }
     }
 }
@@ -134,6 +148,7 @@ impl Debug for Cond {
 pub enum Stmt {
     Bin(Bop, Val, Val, Reg),
     Un(Uop, Val, Reg),
+    Hf(Reg),
     Save {
         addr: Val,
         val: Val,
@@ -204,6 +219,7 @@ impl Debug for Stmt {
                         .join("\n")
                 )
             }
+            Stmt::Hf(reg) => write!(f, "{reg:?} <- $high"),
         }
     }
 }
@@ -234,6 +250,13 @@ impl ToNum for Bop {
             Bop::And => 2,
             Bop::Or => 3,
             Bop::Xor => 5,
+            Bop::Shl => 8,
+            Bop::Shr => 9,
+            Bop::Rol => 10,
+            Bop::Ror => 11,
+            Bop::Ashr => 12,
+            Bop::Mul => 13,
+            Bop::Div => 14,
         }
     }
 }
@@ -282,6 +305,7 @@ fn fix_b<T: ToNum + Copy>(op: &T, l: &Val, r: &Val) -> u8 {
 
 const LOAD: u8 = 6;
 const SAVE: u8 = 7;
+const HF: u8 = 15;
 
 fn get_stamp() -> u32 {
     SystemTime::now()
@@ -377,6 +401,9 @@ impl Display for Stmt {
                         .collect::<Vec<_>>()
                         .join("\n")
                 )
+            }
+            Stmt::Hf(reg) => {
+                write!(f, "{HF} 0 0 {}", reg.to_num())
             }
         }
     }

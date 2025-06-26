@@ -9,6 +9,7 @@ Stmt: Stmt = {
     <r:Register> "=" <l:Val> <b:Bop> <r2:Val> => Stmt::Bin(b, l, r2, r),
     <r:Register> "=" <l:Val> => Stmt::Bin(Bop::Add, l, Val::Im(0), r),
     <r:Register> "=" <u:Uop> <v:Val> => Stmt::Un(u, v, r),
+    <r:Register> "=" "$high" => Stmt::Hf(r),
     <r:Register> "=" "[" <a:Val> "]" => Stmt::Load { addr: a, reg: r },
     "[" <a:Val> "]" "=" <v:Val> => Stmt::Save { addr: a, val: v },
     <lbl:Label> ":" => Stmt::Label(lbl),
@@ -38,6 +39,8 @@ Register: Reg = {
 
 Bop: Bop = {
     "+" => Bop::Add, "-" => Bop::Sub, "&" => Bop::And, "|" => Bop::Or, "^" => Bop::Xor,
+    "<<" => Bop::Shl, ">>" => Bop::Shr, "<|" => Bop::Rol, "|>" => Bop::Ror,
+    "!>>" => Bop::Ashr, "*" => Bop::Mul, "/" => Bop::Div,
 };
 
 Uop: Uop = { "!" => Uop::Not };
