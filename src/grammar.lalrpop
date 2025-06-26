@@ -1,0 +1,41 @@
+use crate::syntax::{Reg, Val, Bop, Uop, Cmp, Stmt}; 
+grammar;
+
+pub Program: Vec<Stmt> = {
+    <stmts: Stmt*> => stmts
+};
+
+Stmt: Stmt = {
+    <r:Register> "=" <l:Val> <b:Bop> <r2:Val> => Stmt::Bin(b, l, r2, r),
+    <r:Register> "=" <u:Uop> <v:Val> => Stmt::Un(u, v, r),
+    <r:Register> "=" "[" <a:Val> "]" => Stmt::Load { addr: a, reg: r },
+    "[" <a:Val> "]" "=" <v:Val> => Stmt::Save { addr: a, val: v },
+    <lbl:Label> ":" => Stmt::Label(lbl),
+    <l:Val> <c:Cmp> <r2:Val> "?" <lbl:Label> => Stmt::Br { label: lbl, lhs: l, rhs: r2, cmp: c },
+};
+
+Im: u8 = r"[0-9]+" => u8::from_str_radix(<>, 10).unwrap();
+
+Val: Val = {
+    <r:Register> => Val::Reg(r),
+    <i:Im> => Val::Im(i),
+};
+
+Label: String = r"[A-Za-z_][A-Za-z0-9_]*" => <>.to_string();
+
+Register: Reg = {
+    "$0" => Reg::R0, "$1" => Reg::R1, "$2" => Reg::R2, "$3" => Reg::R3,
+    "$4" => Reg::R4, "$5" => Reg::R5,
+    "$pc" => Reg::P,  "$in" => Reg::I,  "$out" => Reg::O,
+};
+
+Bop: Bop = {
+    "+" => Bop::Add, "-" => Bop::Sub, "&" => Bop::And, "|" => Bop::Or, "^" => Bop::Xor,
+};
+
+Uop: Uop = { "!" => Uop::Not };
+
+Cmp: Cmp = {
+    "==" => Cmp::Eq, "!=" => Cmp::Neq, "<" => Cmp::Lt, "<=" => Cmp::Leq,
+    ">" => Cmp::Gt, ">=" => Cmp::Geq,
+};
