@@ -346,14 +346,19 @@ impl Display for Stmt {
                 let jeq = Cmp::Eq.to_num();
                 write!(
                     f,
-                    "{} {} {} T_{stamp:X}\n{}\n{jeq} 0 0 D_{stamp:X}\nlabel T_{stamp:X}\n{}\nlabel D_{stamp:X}",
+                    "{} {} {} T_{stamp:X}\n{}{jeq} 0 0 D_{stamp:X}\nlabel T_{stamp:X}\n{}\nlabel D_{stamp:X}",
                     fix_b(&cond.cmp, &cond.lhs, &cond.rhs),
                     cond.lhs.to_num(),
                     cond.rhs.to_num(),
-                    no.iter()
-                        .map(|x| format!("{x}"))
-                        .collect::<Vec<_>>()
-                        .join("\n"),
+                    if no.len() > 0 {
+                        no.iter()
+                            .map(|x| format!("{x}"))
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                            + "\n"
+                    } else {
+                        "".to_string()
+                    },
                     yes.iter()
                         .map(|x| format!("{x}"))
                         .collect::<Vec<_>>()

@@ -14,6 +14,7 @@ Stmt: Stmt = {
     <lbl:Label> ":" => Stmt::Label(lbl),
     // <c:Cond> "?" <lbl:Label> => Stmt::Br { label: lbl, lhs: l, rhs: r2, cmp: c },
     "if" <c:Cond> "then" <s:Stmt*> "else" <s2:Stmt*> "done" => Stmt::If { cond: c, yes: s, no: s2 },
+    "if" <c:Cond> "then" <s:Stmt*> "done" => Stmt::If { cond: c, yes: s, no: vec![] },
     "while" <c:Cond> "do" <s:Stmt*> "done" => Stmt::While { cond: c, block: s },
     "loop" <s:Stmt*> "done" => Stmt::Loop { block: s },
 };
