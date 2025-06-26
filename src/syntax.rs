@@ -305,9 +305,10 @@ impl Display for Stmt {
             }
             Stmt::While { cond, block } => {
                 let stamp = get_stamp();
+                let jeq = Cmp::Eq.to_num();
                 write!(
                     f,
-                    "label L_{stamp:X}\n{} {} {} E_{stamp:X}\n{}\n32 0 0 L_{stamp:X}\nlabel E_{stamp:X}",
+                    "label L_{stamp:X}\n{} {} {} E_{stamp:X}\n{}\n{jeq} 0 0 L_{stamp:X}\nlabel E_{stamp:X}",
                     fix_b(&cond.cmp.inv(), &cond.lhs, &cond.rhs),
                     cond.lhs.to_num(),
                     cond.rhs.to_num(),
@@ -315,14 +316,15 @@ impl Display for Stmt {
                         .iter()
                         .map(|x| format!("{x}"))
                         .collect::<Vec<_>>()
-                        .join("\n")
+                        .join("\n"),
                 )
             }
             Stmt::If { cond, yes, no } => {
                 let stamp = get_stamp();
+                let jeq = Cmp::Eq.to_num();
                 write!(
                     f,
-                    "{} {} {} T_{stamp:X}\n{}\n32 0 0 D_{stamp:X}\nlabel T_{stamp:X}\n{}\nlabel D_{stamp:X}",
+                    "{} {} {} T_{stamp:X}\n{}\n{jeq} 0 0 D_{stamp:X}\nlabel T_{stamp:X}\n{}\nlabel D_{stamp:X}",
                     fix_b(&cond.cmp, &cond.lhs, &cond.rhs),
                     cond.lhs.to_num(),
                     cond.rhs.to_num(),
