@@ -156,6 +156,9 @@ pub enum Stmt {
         yes: Vec<Stmt>,
         no: Vec<Stmt>,
     },
+    Loop {
+        block: Vec<Stmt>,
+    },
 }
 
 impl Debug for Stmt {
@@ -190,6 +193,17 @@ impl Debug for Stmt {
                     .collect::<Vec<_>>()
                     .join("\n")
             ),
+            Stmt::Loop { block } => {
+                write!(
+                    f,
+                    "loop\n{}\ndone",
+                    block
+                        .iter()
+                        .map(|x| format!("{x:?}"))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                )
+            }
         }
     }
 }
@@ -290,7 +304,15 @@ impl Display for Stmt {
             Stmt::Un(uop, val, reg) => {
                 write!(f, "{} {} 0 {}", fix_u(uop, val), val.to_num(), reg.to_num())
             }
-            Stmt::Save { addr, val } => write!(f, "{SAVE} {} {} 0", addr.to_num(), val.to_num()),
+            Stmt::Save { addr, val } => {
+                write!(
+                    f,
+                    "{} {} {} 0",
+                    SAVE + if val.is_im() { 64 } else { 0 },
+                    addr.to_num(),
+                    val.to_num()
+                )
+            }
             Stmt::Load { addr, reg } => write!(f, "{LOAD} {} 0 {}", addr.to_num(), reg.to_num()),
             Stmt::Label(l) => write!(f, "label {l}"),
             Stmt::Br { label, cond } => {
@@ -336,6 +358,19 @@ impl Display for Stmt {
                         .map(|x| format!("{x}"))
                         .collect::<Vec<_>>()
                         .join("\n"),
+                )
+            }
+            Stmt::Loop { block } => {
+                let stamp = get_stamp();
+                let jeq = Cmp::Eq.to_num();
+                write!(
+                    f,
+                    "label L_{stamp:X}\n{}\n{jeq} 0 0 L_{stamp:X}",
+                    block
+                        .iter()
+                        .map(|x| format!("{x}"))
+                        .collect::<Vec<_>>()
+                        .join("\n")
                 )
             }
         }

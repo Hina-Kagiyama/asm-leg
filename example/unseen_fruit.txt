@@ -1,0 +1,27 @@
+$out = 2
+$out = 1
+$out = 2
+$out = 1
+$out = 1
+$out = 1
+$out = 2
+$out = 1
+$out = 0
+$out = 1
+$out = 1
+
+loop
+  $0 = $in
+  if $0 != 92 then
+    $1 = [$0]
+    if $1 != 0 then
+      $out = 2
+      $out = 4
+    else
+      [$0] = 1
+      $out = 3
+    done
+  else
+    $out = 3
+  done
+done
