@@ -149,6 +149,9 @@ pub enum Stmt {
     Bin(Bop, Val, Val, Reg),
     Un(Uop, Val, Reg),
     Hf(Reg),
+    Call(String),
+    Args,
+    Ret,
     Save {
         addr: Val,
         val: Val,
@@ -220,12 +223,20 @@ impl Debug for Stmt {
                 )
             }
             Stmt::Hf(reg) => write!(f, "{reg:?} <- $high"),
+            Stmt::Call(s) => write!(f, "call {s}"),
+            Stmt::Ret => write!(f, "ret"),
+            Stmt::Args => write!(f, "args"),
         }
     }
 }
 
 pub trait ToNum {
     fn to_num(self) -> u8;
+}
+impl ToNum for u8 {
+    fn to_num(self) -> u8 {
+        self
+    }
 }
 impl ToNum for Reg {
     fn to_num(self) -> u8 {
@@ -332,12 +343,18 @@ impl Display for Stmt {
                 write!(
                     f,
                     "{} {} {} 0",
-                    SAVE + if val.is_im() { 64 } else { 0 },
+                    fix_b(&SAVE, addr, val),
                     addr.to_num(),
                     val.to_num()
                 )
             }
-            Stmt::Load { addr, reg } => write!(f, "{LOAD} {} 0 {}", addr.to_num(), reg.to_num()),
+            Stmt::Load { addr, reg } => write!(
+                f,
+                "{} {} 0 {}",
+                LOAD + if addr.is_im() { 128 } else { 0 },
+                addr.to_num(),
+                reg.to_num()
+            ),
             Stmt::Label(l) => write!(f, "label {l}"),
             Stmt::Br { label, cond } => {
                 write!(
@@ -404,6 +421,22 @@ impl Display for Stmt {
             }
             Stmt::Hf(reg) => {
                 write!(f, "{HF} 0 0 {}", reg.to_num())
+            }
+            Stmt::Args => {
+                writeln!(f, "65 5 1 5\n{SAVE} 5 1 0")?;
+                writeln!(f, "65 5 1 5\n{SAVE} 5 2 0")?;
+                writeln!(f, "65 5 1 5\n{SAVE} 5 3 0")?;
+                writeln!(f, "65 5 1 5\n{SAVE} 5 4 0")
+            }
+            Stmt::Call(s) => {
+                writeln!(f, "64 6 8 0\n{SAVE} 5 0 0\n64 6 0 {s}")
+            }
+            Stmt::Ret => {
+                writeln!(f, "{LOAD} 5 0 0\n64 5 1 5")?;
+                writeln!(f, "{LOAD} 5 0 4\n64 5 1 5")?;
+                writeln!(f, "{LOAD} 5 0 3\n64 5 1 5")?;
+                writeln!(f, "{LOAD} 5 0 2\n64 5 1 5")?;
+                writeln!(f, "{LOAD} 5 0 1\n64 5 1 5\n64 6 0 0")
             }
         }
     }
