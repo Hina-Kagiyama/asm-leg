@@ -4,7 +4,7 @@ $3 = $in
 $4 = $in
 $5 = 255
 
-move :
+move:
   if $1 == 0 then
     $out = $2
     $out = 5
@@ -28,3 +28,4 @@ move :
     $4 = $0
     call move
   done
+ret
