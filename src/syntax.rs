@@ -429,7 +429,7 @@ impl Display for Stmt {
                 write!(f, "65 5 1 5\n{SAVE} 5 4 0\n65 5 1 5")
             }
             Stmt::Call(s) => {
-                write!(f, "64 6 8 0\n{SAVE} 5 0 0\n192 {s} 0 6")
+                write!(f, "64 6 12 0\n{SAVE} 5 0 0\n192 {s} 0 6")
             }
             Stmt::Ret => {
                 writeln!(f, "{LOAD} 5 0 0\n64 5 1 5")?;
